@@ -1,0 +1,9 @@
+> test seq
+CCCCCCCCAC
+ACACACACAG
+CGGGAACCCC
+GCACACACAC
+AC
+
+>test
+dsfsdf
