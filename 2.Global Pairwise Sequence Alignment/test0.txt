@@ -1,0 +1,2 @@
+> gi| Test case 1, Sequence 1
+TTTACGTTT
