@@ -7,7 +7,7 @@ import numpy as np
 import textwrap
 import re
 
-Gap = -4
+Gap = -5
 
 
 def valid(qqq):  # 입력 데이터 확인
