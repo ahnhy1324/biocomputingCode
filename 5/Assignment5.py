@@ -90,40 +90,47 @@ def ConstructFa(pattern):
 
 def test():
     return 0
-def FindMatch(text, Tree, pattern):
-    text = text +' '
+def FindMatch(text, Tree, num_pattern):
+    text = text +'\n'
     Nowstate = 0
-    output = [[] for _ in range(len(pattern))]
-    print(len(text))
+    output = [[] for _ in range(num_pattern)]
     for i in range(len(text)):
         while True:
             tmp = Tree[Nowstate].get(text[i])
             if Tree[Nowstate]['hit'] > -1:
-                print(Tree[Nowstate]['data'])
                 output[Tree[Nowstate]['hit']].append(i - 1)
             if tmp:
                 Nowstate = tmp
                 break
             else:
-                if i == len(text)-1:
+                if Nowstate==0:
                     break
-                Nowstate = Tree[Nowstate].get('fail')
+                else:
+                    Nowstate = Tree[Nowstate].get('fail')
     return output
 
 def ShowFind(result, pattern):
-    if len(result):
-        for i in range(len(result)):
-            return 0
+    cnt = 0
+    for i in result:
+        cnt = cnt + len(i)
+    if cnt:
+        for pat in range(len(pattern)):
+            for i in range(len(result[pat])):
+                result[pat][i] = result[pat][i] - len(pattern[pat])+1
+            print('pattern: ', pattern[pat],'\nlocation:',end=' ')
+            if len(result[pat]):
+                print(result[pat])
+            else:print('none')
     else:
         print("No match found")
-    return 0
 
 if __name__ == '__main__':
     text, pattern = LoadData(sys.argv)
     start_time = datetime.datetime.now()
     Tree = ConstructFa(pattern)
-    finded = FindMatch(text[0],Tree, pattern)
+    finded = FindMatch(text[0],Tree, len(pattern))
     end_time = datetime.datetime.now()
     elapsed_time = end_time - start_time
+    print('text: ',text[0])
     ShowFind(finded, pattern)
     print('동작시간: ', elapsed_time.microseconds, 'ms')
