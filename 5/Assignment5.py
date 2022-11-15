@@ -42,60 +42,78 @@ def LoadData(args):
     return np.asarray(text), np.asarray(pattern)
 
 
+def pop(data):
+    return data[1::]
+
+
 def ConstructFa(pattern):
     cnt = 0
     NextState = 1
-    FaTrue = {}
+    Tree = {}  # {}
+
+
     for i in pattern:
         cnt += len(i)
     for i in range(cnt+1):
-        FaTrue[i] = {}
+        Tree[i] = {'fail':0, 'hit':-1, 'data':''}
     for i in range(len(pattern)):
         NowState = 0
         for e in range(len(pattern[i])):
-            if FaTrue[NowState].get(pattern[i][e]):
-                NowState = FaTrue[NowState].get(pattern[i][e])[0]
-            else: 
-                FaTrue[NowState][pattern[i][e]] = [NextState,-1]
-                if e == len(pattern[i])-1:
-                    FaTrue[NowState][pattern[i][e]] = [NextState,i]
-                NowState = NextState
-                NextState += 1
-    return FaTrue
-
-def fail(que,ConstFa,pre_text,next_text):
-    for i in range(len(que)):
-        if ConstFa[que[len(que)-i-1]].get(pre_text):
-            Nowstate = ConstFa[que[len(que)-i-1]].get(pre_text)[0]
-            if ConstFa[Nowstate].get(next_text):
-                Nowstate = ConstFa[Nowstate].get(next_text)[0]
+            if Tree[NowState].get(pattern[i][e]):#이미 존재하는 경우
+                NowState = Tree[NowState].get(pattern[i][e])
             else:
-                if len(que) != i:
-                    Nowstate = fail(que[:len(que) - i],ConstFa,pre_text,next_text)
-            print(Nowstate)           
-            return Nowstate
-    return 0
-        
+                Tree[NowState][pattern[i][e]] = NextState
+                Tree[NextState]['data'] = pattern[i][:e + 1]
+                NowState = NextState
+                NextState = NextState + 1
+            if e == len(pattern[i]) - 1:# 패턴의 마지막인 경우
+                Tree[NowState]['hit'] = i
+    #여기까지가 트리 생성, 이후 Fail 노드 생성
+    for i in range(len(Tree)):
+        nowstate = 0
+        tmp = pop(Tree[i].get('data'))
+        while len(tmp):
+            flg = 0
+            nowstate = 0
+            for char in tmp:
+                if Tree[nowstate].get(char):
+                    nowstate = Tree[nowstate].get(char)
+                    flg = flg + 1
+                else:
+                    break
+            if flg == len(tmp):
+                break
+            tmp = pop(tmp)
+        if len(tmp):
+            Tree[i]['fail'] = nowstate
+    return Tree
 
-def FindMatch(text, ConstFa, pattern):
+def test():
+    return 0
+def FindMatch(text, Tree, pattern):
+    text = text +' '
     Nowstate = 0
-    que = []
+    output = [[] for _ in range(len(pattern))]
+    print(len(text))
     for i in range(len(text)):
-        print(text[i],'--------')
-        find = ConstFa[Nowstate].get(text[i])
-        if find:
-            que.append(Nowstate)
-            if find[1] >-1:
-                print(pattern[find[1]])
-            Nowstate = find[0]
-        else:
-            Nowstate = fail(que[:len(que)],ConstFa,text[i-1],text[i])
-    return text
+        while True:
+            tmp = Tree[Nowstate].get(text[i])
+            if Tree[Nowstate]['hit'] > -1:
+                print(Tree[Nowstate]['data'])
+                output[Tree[Nowstate]['hit']].append(i - 1)
+            if tmp:
+                Nowstate = tmp
+                break
+            else:
+                if i == len(text)-1:
+                    break
+                Nowstate = Tree[Nowstate].get('fail')
+    return output
 
 def ShowFind(result, pattern):
     if len(result):
         for i in range(len(result)):
-            pass
+            return 0
     else:
         print("No match found")
     return 0
@@ -103,8 +121,8 @@ def ShowFind(result, pattern):
 if __name__ == '__main__':
     text, pattern = LoadData(sys.argv)
     start_time = datetime.datetime.now()
-    ConstFa = ConstructFa(pattern)
-    finded = FindMatch(text[0],ConstFa, pattern)
+    Tree = ConstructFa(pattern)
+    finded = FindMatch(text[0],Tree, pattern)
     end_time = datetime.datetime.now()
     elapsed_time = end_time - start_time
     ShowFind(finded, pattern)

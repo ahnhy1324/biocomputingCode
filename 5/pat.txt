@@ -1,4 +1,2 @@
-tg
-atg
-tca
-tgac
+test
+qq
